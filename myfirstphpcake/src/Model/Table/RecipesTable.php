@@ -56,9 +56,10 @@ class RecipesTable extends Table
             ->notEmptyString('name');
 
         $validator
-            ->email('email')
-            ->requirePresence('email', 'create')
-            ->notEmptyString('email');
+        ->add('email', 'valid-email', ['rule' => 'email']);
+            //->email('email')
+            //->requirePresence('email', 'create')
+           // ->notEmptyString('email');
 
         $validator
             ->integer('password')

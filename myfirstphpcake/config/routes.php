@@ -50,6 +50,7 @@ return static function (RouteBuilder $routes) {
     $routes->scope('/', function (RouteBuilder $builder) {
         $builder->setExtensions(['json','xml']);
         $builder->resources('Recipes');
+        $builder->connect('/',['controller' => 'test','action' => 'index']);
         /*
          * Here, we are connecting '/' (base path) to a controller called 'Pages',
          * its action called 'display', and we pass a param to select the view file
