@@ -4,15 +4,17 @@ namespace App\Controller;
 
 use Cake\ORM\Table;
 use Cake\Http\ServerRequest;
+use Cake\Event\EventInterface;
+use Cake\Datasource\FactoryLocator;
 
 class RecipesController extends AppController
 {
-    private $blogObject;
+
     public function initialize(): void
     {
         parent::initialize();
         $this->loadComponent('RequestHandler');
-        $this->loadComponent("Auth");
+        //$this->loadComponent("Auth");
         //$this->blogObject = $this->getTableLocator()->get('Recipe'); // Loading Recipe Class
     }
 
@@ -33,13 +35,24 @@ class RecipesController extends AppController
     public function add()
     {
         $this->request->allowMethod(['post', 'put']);
-        $recipe = $this->Recipes->newEntity($this->request->getData(),['validate' => false]);
-       
-        $result = $this->Recipes->save($recipe);
-        if ($result) {
-            $message = 'Saved';
-        } else {
-            $message = 'Error';
+        $recipe = $this->Recipes->newEntity($this->request->getData(), ['validate' => false]);
+        $name=$recipe['name'];
+        $email=$recipe['email'];
+        $pw=$recipe['password'];
+        //$result = $this->Recipes->save($recipe);
+        $email = $recipe->email;
+        $user = $this->Recipes->find('all')
+            ->where([
+                'Recipes.email' => $email,
+            ])
+            ->first();
+        if ($user) {
+            $message = 'email already exist';
+        } else{
+            if(!empty($name) && !empty($email) && !empty($pw) ){
+            $result = $this->Recipes->save($recipe);
+            $message = 'inserted';
+        }
         }
         $this->set([
             'message' => $message,
@@ -79,27 +92,15 @@ class RecipesController extends AppController
 
     public function login()
     {
-        //$this->request->allowMethod(['post']);
-        $this->request->params['recipe'];
+        $data = $this->request->allowMethod(['get', 'post']);
         $result = $this->Authentication->getResult();
-        if ($result) {
-            $message = 'user login';
-        } else {
-            $message = 'Error';
+        // regardless of POST or GET, redirect if user is logged in
+        if ($result->isValid()) {
+            return $this->redirect(['controller' => 'Recipes', 'action' => 'index']);
         }
-        $this->set([
-            'message' => $message,
-            'recipe' =>$result,
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
-        
-
-       /**$response = [
-            'result' => false,
-            'code' => 'access-denied',
-            'message' => 'Invalid credentials or access denied.'
-        ];
-        $this->set(compact('loggedIn', 'response'));
-        $this->set('_serialize', ['loggedIn', 'response']);*/
+        // display error if user submitted and authentication failed
+        if ($this->request->is('post') && !$result->isValid()) {
+            $this->Flash->error(__('Invalid Email or Password'));
+        }
     }
 }
