@@ -50,8 +50,14 @@ return static function (RouteBuilder $routes) {
     $routes->scope('/', function (RouteBuilder $builder) {
         $builder->setExtensions(['json','xml']);
         $builder->resources('Recipes');
-        $builder->connect('/',['controller' => 'test','action' => 'index']);
-        $builder->connect('/', ['controller' => 'recipes', 'action' => 'login']);
+        $builder->resources('Users');
+        $builder->connect('/login', ['controller' => 'Recipe', 'action' => 'login']);
+        $builder->connect('/register', ['controller' => 'Recipe', 'action' => 'register']);
+        $builder->connect('/index', ['controller' => 'Recipe', 'action' => 'index']);
+        $builder->connect('/add', ['controller' => 'Recipe', 'action' => 'add']);
+        $builder->connect('/edit', ['controller' => 'Recipe', 'action' => 'edit']);
+        $builder->connect('/delete', ['controller' => 'Recipe', 'action' => 'delete']);
+        $builder->connect('/view', ['controller' => 'Recipe', 'action' => 'view']);
         /*
          * Here, we are connecting '/' (base path) to a controller called 'Pages',
          * its action called 'display', and we pass a param to select the view file
@@ -96,6 +102,10 @@ return static function (RouteBuilder $routes) {
      * });
      * ```
      */
+    /**$routes->scope('/api', function (RouteBuilder $builder) {
+        $builder->setExtensions(['json', 'xml']);
+        $builder->fallbacks();
+    });*/
   
 };
 

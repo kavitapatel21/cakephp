@@ -20,9 +20,9 @@ class RecipesFixture extends TestFixture
         $this->records = [
             [
                 'id' => 1,
-                'name' => 1,
-                'email' => 1,
-                'password' => 1,
+                'name' => 'Lorem ipsum dolor sit amet',
+                'email' => 'Lorem ipsum dolor sit amet',
+                'password' => 'Lorem ipsum dolor sit amet',
             ],
         ];
         parent::init();

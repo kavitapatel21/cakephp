@@ -21,8 +21,8 @@
                 <?php foreach ($recipes as $recipe): ?>
                 <tr>
                     <td><?= $this->Number->format($recipe->id) ?></td>
-                    <td><?= $this->Number->format($recipe->name) ?></td>
-                    <td><?= $this->Number->format($recipe->email) ?></td>
+                    <td><?= h($recipe->name) ?></td>
+                    <td><?= h($recipe->email) ?></td>
                     <td class="actions">
                         <?= $this->Html->link(__('View'), ['action' => 'view', $recipe->id]) ?>
                         <?= $this->Html->link(__('Edit'), ['action' => 'edit', $recipe->id]) ?>

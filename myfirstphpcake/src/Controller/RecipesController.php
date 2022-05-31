@@ -2,10 +2,10 @@
 
 namespace App\Controller;
 
-use Cake\ORM\Table;
-use Cake\Http\ServerRequest;
 use Cake\Event\EventInterface;
-use Cake\Datasource\FactoryLocator;
+use Cake\Utility\Security;
+use Firebase\JWT\JWT;
+
 
 class RecipesController extends AppController
 {
@@ -14,93 +14,63 @@ class RecipesController extends AppController
     {
         parent::initialize();
         $this->loadComponent('RequestHandler');
-        //$this->loadComponent("Auth");
-        //$this->blogObject = $this->getTableLocator()->get('Recipe'); // Loading Recipe Class
     }
 
-    public function index()
+    public function beforeFilter(EventInterface $event)
     {
-        $recipes = $this->Recipes->find('all')->all();
-        $this->set('recipes', $recipes);
-        $this->viewBuilder()->setOption('serialize', ['recipes']);
+        parent::beforeFilter($event);
+
+        $this->Authentication->addUnauthenticatedActions([
+            'login',
+            'register',
+            ]);
     }
 
-    public function view($id)
-    {
-        $recipe = $this->Recipes->get($id);
-        $this->set('recipe', $recipe);
-        $this->viewBuilder()->setOption('serialize', ['recipe']);
-    }
+   /**
+ * Users Login
+ *
+ * @return \Cake\Http\Response|null|void
+ */
+public function login()
+{
+    $this->request->allowMethod(['get', 'post']);
 
-    public function add()
-    {
-        $this->request->allowMethod(['post', 'put']);
-        $recipe = $this->Recipes->newEntity($this->request->getData(), ['validate' => false]);
-        $name=$recipe['name'];
-        $email=$recipe['email'];
-        $pw=$recipe['password'];
-        //$result = $this->Recipes->save($recipe);
-        $email = $recipe->email;
-        $user = $this->Recipes->find('all')
-            ->where([
-                'Recipes.email' => $email,
-            ])
-            ->first();
-        if ($user) {
-            $message = 'email already exist';
-        } else{
-            if(!empty($name) && !empty($email) && !empty($pw) ){
-            $result = $this->Recipes->save($recipe);
-            $message = 'inserted';
-        }
-        }
-        $this->set([
-            'message' => $message,
-            'recipe' => $recipe,
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
+    $result = $this->Authentication->getResult();
+    if ($result->isValid()) {
+        $user = $result->getData();
+        $payload = [
+            'sub' => $user->id,
+            'exp' => time() + 60,
+        ];
+        $json = [
+            'token' => JWT::encode($payload, Security::getSalt(), 'HS256'),
+        ];
+    } else {
+        $this->response = $this->response->withStatus(401);
+        $json = [];
     }
+    $this->set(compact('json'));
+    $this->viewBuilder()->setOption('serialize', 'json');
+}
 
-    public function edit($id)
-    {
-        $this->request->allowMethod(['patch', 'post', 'put']);
-        $recipe = $this->Recipes->get($id);
-        $recipe = $this->Recipes->patchEntity($recipe, $this->request->getData(), ['validate' => false]);
-        if ($this->Recipes->save($recipe)) {
-            $message = 'Saved';
+/**
+ * Register method
+ *
+ * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
+ */
+public function register()
+{
+    $user = $this->Recipes->newEmptyEntity();
+    $message = null;
+    if ($this->getRequest()->is(['post', 'put'])) {
+        $user = $this->Recipes->patchEntity($user, $this->request->getData());
+        if ($this->Recipes->save($user)) {
+            $message = __('The user has been saved.');
         } else {
-            $message = 'Error';
-        }
-        $this->set([
-            'message' => $message,
-            'recipe' => $recipe,
-        ]);
-        $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
-    }
-
-    public function delete($id)
-    {
-        $this->request->allowMethod(['delete']);
-        $recipe = $this->Recipes->get($id);
-        $message = 'Deleted';
-        if (!$this->Recipes->delete($recipe)) {
-            $message = 'Error';
-        }
-        $this->set('message', $message);
-        $this->viewBuilder()->setOption('serialize', ['message']);
-    }
-
-    public function login()
-    {
-        $data = $this->request->allowMethod(['get', 'post']);
-        $result = $this->Authentication->getResult();
-        // regardless of POST or GET, redirect if user is logged in
-        if ($result->isValid()) {
-            return $this->redirect(['controller' => 'Recipes', 'action' => 'index']);
-        }
-        // display error if user submitted and authentication failed
-        if ($this->request->is('post') && !$result->isValid()) {
-            $this->Flash->error(__('Invalid Email or Password'));
+            $message = __('The user could not be saved. Please, try again.');
         }
     }
+    $this->set(compact('recipe', 'message'));
+    $this->viewBuilder()->setOption('serialize', ['recipe', 'message']);
+}
 }

@@ -2,16 +2,17 @@
 declare(strict_types=1);
 
 namespace App\Model\Entity;
-use Cake\Auth\DefaultPasswordHasher;
+
 use Cake\ORM\Entity;
+use Cake\Auth\DefaultPasswordHasher;
 
 /**
  * Recipe Entity
  *
  * @property int $id
- * @property int $name
- * @property int $email
- * @property int $password
+ * @property string $name
+ * @property string $email
+ * @property string $password
  */
 class Recipe extends Entity
 {
@@ -25,11 +26,9 @@ class Recipe extends Entity
      * @var array<string, bool>
      */
     protected $_accessible = [
-        //'name' => true,
-        //'email' => true,
-        //'password' => true,
-        '*' => true,
-        'id' => false
+        'name' => true,
+        'email' => true,
+        'password' => true,
     ];
 
     /**
@@ -38,12 +37,10 @@ class Recipe extends Entity
      * @var array<string>
      */
     protected $_hidden = [
-       'password',
+        'password',
     ];
     protected function _setPassword($password)
     {
-        if (strlen($password) > 0) {
-            return (new DefaultPasswordHasher)->hash($password);
-        }
+        return (new DefaultPasswordHasher)->hash($password);
     }
 }

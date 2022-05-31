@@ -1,8 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Controller;
+use Cake\Controller\Controller;
+use Cake\Event\Event;
+use Cake\Network\Exception\UnauthorizedException;
+use Cake\Utility\Security;
+use Firebase\JWT\JWT;
 
 /**
  * Users Controller
@@ -12,6 +16,12 @@ namespace App\Controller;
  */
 class UsersController extends AppController
 {
+    public function initialize(): void
+    {
+        parent::initialize();
+        $this->Auth->allow(['add', 'token']);
+      
+    }
     /**
      * Index method
      *
@@ -47,19 +57,22 @@ class UsersController extends AppController
      */
     public function add()
     {
-        $user = $this->Users->newEmptyEntity();
-        if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+        $this->Users->on('afterSave', function(Event $event) {
+            if ($event->subject->created) {
+                $this->set('data', [
+                    'id' => $event->subject->entity->id,
+                    'token' => JWT::encode(
+                        [
+                            'sub' => $event->subject->entity->id,
+                            'exp' =>  time() + 604800
+                        ],
+                    Security::salt())
+                ]);
+                $this->Users->action()->config('serialize.data', 'data');
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
-        }
-        $this->set(compact('user'));
+        });
+        return $this->Users->execute();
     }
-
     /**
      * Edit method
      *
@@ -102,17 +115,5 @@ class UsersController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
-    }
-
-    public function login()
-    {
-        if ($this->request->is('post')) {
-            $user = $this->Auth->identify();
-            if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect(['controller' => 'posts']);
-            }
-            $this->Flash->error('Incorrect login');
-        }
     }
 }

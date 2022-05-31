@@ -51,18 +51,19 @@ class RecipesTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->integer('name')
+            ->scalar('name')
+            ->maxLength('name', 255)
             ->requirePresence('name', 'create')
             ->notEmptyString('name');
 
         $validator
-        ->add('email', 'valid-email', ['rule' => 'email']);
-            //->email('email')
-            //->requirePresence('email', 'create')
-           // ->notEmptyString('email');
+            ->email('email')
+            ->requirePresence('email', 'create')
+            ->notEmptyString('email');
 
         $validator
-            ->integer('password')
+            ->scalar('password')
+            ->maxLength('password', 255)
             ->requirePresence('password', 'create')
             ->notEmptyString('password');
 

@@ -19,16 +19,16 @@
             <h3><?= h($recipe->name) ?></h3>
             <table>
                 <tr>
-                    <th><?= __('Id') ?></th>
-                    <td><?= $this->Number->format($recipe->id) ?></td>
-                </tr>
-                <tr>
                     <th><?= __('Name') ?></th>
-                    <td><?= $this->Number->format($recipe->name) ?></td>
+                    <td><?= h($recipe->name) ?></td>
                 </tr>
                 <tr>
                     <th><?= __('Email') ?></th>
-                    <td><?= $this->Number->format($recipe->email) ?></td>
+                    <td><?= h($recipe->email) ?></td>
+                </tr>
+                <tr>
+                    <th><?= __('Id') ?></th>
+                    <td><?= $this->Number->format($recipe->id) ?></td>
                 </tr>
             </table>
         </div>
